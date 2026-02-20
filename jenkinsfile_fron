@@ -19,7 +19,22 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 dir('frontend26') {
-                    sh 'npm install'
+                    // cache npm pour accélérer les builds
+                    script {
+                        if (fileExists('node_modules')) {
+                            echo "node_modules exists, skipping install"
+                        } else {
+                            sh 'npm install'
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Run Tests') {
+            steps {
+                dir('frontend26') {
+                    sh 'npm test -- --watchAll=false'
                 }
             }
         }
@@ -44,7 +59,8 @@ pipeline {
                     sh """
                         $SCANNER_HOME/bin/sonar-scanner \
                         -Dsonar.projectName=NodeJS-Project \
-                        -Dsonar.projectKey=NodeJS-Project
+                        -Dsonar.projectKey=NodeJS-Project \
+                        -Dsonar.sources=frontend26/src
                     """
                 }
             }
@@ -53,7 +69,7 @@ pipeline {
         stage('Quality Gate Check') {
             steps {
                 timeout(time: 1, unit: 'HOURS') {
-                    waitForQualityGate abortPipeline: false, credentialsId: 'sonar-token'
+                    waitForQualityGate abortPipeline: true, credentialsId: 'sonar-token'
                 }
             }
         }
@@ -61,6 +77,12 @@ pipeline {
         stage('Trivy FS Scan') {
             steps {
                 sh 'trivy fs --format table -o fs-report.html .'
+            }
+        }
+        
+        stage('Completion') {
+            steps {
+                echo '✅ Pipeline completed successfully!'
             }
         }
     }
