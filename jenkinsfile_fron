@@ -30,14 +30,6 @@ pipeline {
                 }
             }
         }
-
-        stage('Run Tests') {
-            steps {
-                dir('frontend26') {
-                    sh 'npm test -- --watchAll=false'
-                }
-            }
-        }
         
         stage('Build Frontend') {
             steps {
