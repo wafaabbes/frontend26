@@ -24,8 +24,8 @@ WORKDIR /app
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/package*.json ./
 
-# Copier le dossier public s'il existe (optionnel)
-COPY --from=builder /app/public ./public 2>/dev/null || echo "No public directory found, skipping..."
+# Copier le dossier public s'il existe (sans echo)
+COPY --from=builder /app/public ./public 2>/dev/null || true
 
 # Installer seulement les dépendances de production
 RUN npm install --omit=dev
