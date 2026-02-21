@@ -6,7 +6,7 @@ WORKDIR /app
 # Copier package.json + package-lock.json
 COPY package*.json ./
 
-# Installer toutes les dépendances (dev inclus)
+# Installer dépendances
 RUN npm install
 
 # Copier le reste
@@ -23,9 +23,8 @@ WORKDIR /app
 # Copier les fichiers de build
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/package*.json ./
-COPY --from=builder /app/next.config.js ./ 2>/dev/null || true
 
-# Copier le dossier public s'il existe
+# Copier le dossier public s'il existe (optionnel)
 COPY --from=builder /app/public ./public 2>/dev/null || echo "No public directory found, skipping..."
 
 # Installer seulement les dépendances de production
