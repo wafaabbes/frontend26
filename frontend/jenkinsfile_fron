@@ -18,7 +18,7 @@ pipeline {
         
         stage('Install Dependencies') {
             steps {
-                dir('frontend26') {
+                dir('frontend') {
                     // cache npm pour accélérer les builds
                     script {
                         if (fileExists('node_modules')) {
@@ -33,7 +33,7 @@ pipeline {
         
         stage('Build Frontend') {
             steps {
-                dir('frontend26') {
+                dir('frontend') {
                     sh 'npm run build'
                 }
             }
@@ -41,7 +41,7 @@ pipeline {
         
         stage('GitLeaks Scan') {
             steps {
-                sh 'gitleaks detect --source ./frontend26 --exit-code 1'
+                sh 'gitleaks detect --source ./frontend --exit-code 1'
             }
         }
         
