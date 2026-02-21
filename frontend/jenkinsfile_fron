@@ -19,7 +19,6 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 dir('frontend') {
-                    // cache npm pour accélérer les builds
                     script {
                         if (fileExists('node_modules')) {
                             echo "node_modules exists, skipping install"
@@ -67,15 +66,18 @@ pipeline {
                 sh 'trivy fs --format table -o fs-report.html .'
             }
         }
-stage('build & tag docker image') {
+        
+        stage('Build & Tag Docker Image') {
             steps {
                 script {
                     withDockerRegistry(credentialsId: 'docker-cred') {
                         dir('frontend') {
                             sh 'docker build -t wafaabbes453/frontend26:latest .'
-                            sh 'trivy image --format table -o frontend26-image-report.html wafaabbes453/frontend26:latest '
+                            sh 'trivy image --format table -o frontend26-image-report.html wafaabbes453/frontend26:latest'
                             sh 'docker push wafaabbes453/frontend26:latest'
-
+                        } // fin dir
+                    } // fin withDockerRegistry
+                } // fin script
             }
         }
         
@@ -85,4 +87,4 @@ stage('build & tag docker image') {
             }
         }
     }
-}
+} 
