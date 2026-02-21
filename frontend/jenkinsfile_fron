@@ -72,7 +72,7 @@ pipeline {
                 script {
                     withDockerRegistry(credentialsId: 'docker-crede') {
                         dir('frontend') {
-                            sh 'docker build -t wafaabbes453/frontend26:latest .'
+                            sh 'docker build -t wafa23/frontend26:latest .'
                             sh 'trivy image --format table -o frontend26-image-report.html wafaabbes453/frontend26:latest'
                             sh 'docker push wafaabbes453/frontend26:latest'
                         } // fin dir
