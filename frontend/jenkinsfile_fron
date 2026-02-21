@@ -70,7 +70,7 @@ pipeline {
         stage('Build & Tag Docker Image') {
             steps {
                 script {
-                    withDockerRegistry(credentialsId: 'docker-cred') {
+                    withDockerRegistry(credentialsId: 'docker-crede') {
                         dir('frontend') {
                             sh 'docker build -t wafaabbes453/frontend26:latest .'
                             sh 'trivy image --format table -o frontend26-image-report.html wafaabbes453/frontend26:latest'
