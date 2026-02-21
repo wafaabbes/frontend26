@@ -7,7 +7,7 @@ pipeline {
 
     environment {
         SCANNER_HOME = tool 'sonar-scanner'
-        DOCKER_BUILDKIT = '1'  // activer BuildKit
+        DOCKER_BUILDKIT = '0'  // BuildKit désactivé pour éviter l'erreur
     }
 
     stages {
