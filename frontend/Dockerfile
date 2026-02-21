@@ -1,16 +1,32 @@
-# Étape 1: builder
-FROM node:18-alpine AS builder
+# Stage builder
+FROM node:23-alpine AS builder
+
 WORKDIR /app
+
+# Copier package.json + package-lock.json
 COPY package*.json ./
+
+# Installer dépendances
 RUN npm install
+
+# Copier le reste
 COPY . .
+
+# Build Next.js
 RUN npm run build
 
-# Étape 2: image de production
-FROM node:18-alpine
+# Stage production
+FROM node:23-alpine
+
 WORKDIR /app
+
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/package*.json ./
 COPY --from=builder /app/public ./public
+
+# Installer seulement les dépendances de production
+RUN npm install --omit=dev
+
 EXPOSE 3000
+
 CMD ["npm", "start"]
