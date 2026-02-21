@@ -7,7 +7,7 @@ pipeline {
 
     environment {
         SCANNER_HOME = tool 'sonar-scanner'
-        DOCKER_BUILDKIT = '0'  // BuildKit désactivé pour éviter l'erreur
+        DOCKER_BUILDKIT = '0'  // BuildKit désactivé
     }
 
     stages {
@@ -79,7 +79,8 @@ pipeline {
                     if (dockerAvailable == 'OK') {
                         withDockerRegistry(credentialsId: 'docker-crede') {
                             dir('frontend') {
-                                sh 'docker build --progress=plain -t wafa23/frontend26:latest .'
+                                // Option --progress supprimée pour compatibilité avec ancienne version Docker
+                                sh 'docker build -t wafa23/frontend26:latest .'
                                 sh 'trivy image --format table -o frontend26-image-report.html wafa23/frontend26:latest'
                                 sh 'docker push wafa23/frontend26:latest'
                             }
