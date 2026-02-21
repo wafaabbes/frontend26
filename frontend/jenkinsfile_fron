@@ -1,6 +1,6 @@
 pipeline {
     agent any
-    
+
     tools {
         nodejs 'nodejs23'
     }
@@ -15,7 +15,7 @@ pipeline {
                 git branch: 'main', url: 'https://github.com/wafaabbes/frontend26.git'
             }
         }
-        
+
         stage('Install Dependencies') {
             steps {
                 dir('frontend') {
@@ -29,7 +29,7 @@ pipeline {
                 }
             }
         }
-        
+
         stage('Build Frontend') {
             steps {
                 dir('frontend') {
@@ -37,61 +37,62 @@ pipeline {
                 }
             }
         }
-        
+
         stage('GitLeaks Scan') {
             steps {
                 sh 'gitleaks detect --source ./frontend --exit-code 1 || true'
             }
         }
-        
+
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv('sonar') {
-                    sh '''$SCANNER_HOME/bin/sonar-scanner \
-                           -Dsonar.projectName=NodeJS-Project \
-                           -Dsonar.projectKey=NodeJS-Project'''
+                    sh """$SCANNER_HOME/bin/sonar-scanner \
+                          -Dsonar.projectName=NodeJS-Project \
+                          -Dsonar.projectKey=NodeJS-Project"""
                 }
             }
         }
-        
+
         stage('Quality Gate Check') {
             steps {
                 timeout(time: 1, unit: 'HOURS') {
                     script {
                         def qg = waitForQualityGate abortPipeline: false, credentialsId: 'sonar-token'
-                        if (qg.status != 'OK') {
-                            echo "⚠ Quality Gate status: ${qg.status} — pipeline continues for testing purposes."
-                        } else {
-                            echo "✅ Quality Gate passed!"
-                        }
+                        echo "⚠ Quality Gate status: ${qg.status} — pipeline continues for testing purposes."
                     }
                 }
             }
         }
-        
+
         stage('Trivy FS Scan') {
             steps {
                 sh 'trivy fs --format table -o fs-report.html . || true'
             }
         }
-        
+
         stage('Build & Tag Docker Image') {
             steps {
                 script {
-                    withDockerRegistry(credentialsId: 'docker-crede') {
-                        dir('frontend') {
-                            sh 'docker build -t wafa23/frontend26:latest .'
-                            sh 'trivy image --format table -o frontend26-image-report.html wafa23/frontend26:latest || true'
-                            sh 'docker push wafa23/frontend26:latest'
+                    def dockerAvailable = sh(script: 'docker info > /dev/null 2>&1 && echo OK || echo FAIL', returnStdout: true).trim()
+                    if (dockerAvailable == 'OK') {
+                        withDockerRegistry(credentialsId: 'docker-crede') {
+                            dir('frontend') {
+                                sh 'docker build -t wafa23/frontend26:latest .'
+                                sh 'trivy image --format table -o frontend26-image-report.html wafa23/frontend26:latest'
+                                sh 'docker push wafa23/frontend26:latest'
+                            }
                         }
+                    } else {
+                        echo "⚠ Docker non disponible ou permissions insuffisantes, skipping Docker build/push."
                     }
                 }
             }
         }
-        
+
         stage('Completion') {
             steps {
-                echo '✅ Pipeline completed (Quality Gate may be WARNING/ERROR).'
+                echo '✅ Pipeline completed (some steps may have been skipped due to environment issues).'
             }
         }
     }
