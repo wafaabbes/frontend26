@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend26
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: frontend26
+  template:
+    metadata:
+      labels:
+        app: frontend26
+    spec:
+      containers:
+      - name: frontend
+        image: wafa23/frontend26:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 80
