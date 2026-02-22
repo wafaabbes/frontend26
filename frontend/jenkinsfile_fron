@@ -91,6 +91,26 @@ pipeline {
                 }
             }
         }
+stage('Deploy to K3s') {
+    steps {
+        script {
+            sh '''
+                set -e  # Arrêter en cas d'erreur
+                
+                echo "🚀 Déploiement sur K3s..."
+                cd frontend/k3s
+                
+                kubectl apply -f deployment.yaml
+                kubectl apply -f service.yaml 
+                kubectl apply -f ingress.yaml
+                
+                kubectl rollout status deployment/frontend26
+                
+                echo "✅ Déploiement réussi !"
+            '''
+        }
+    }
+}
 
         stage('Completion') {
             steps {
